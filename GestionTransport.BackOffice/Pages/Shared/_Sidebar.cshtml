@@ -1,20 +1,135 @@
-<nav class="pcoded-navbar menu-light ">
+﻿<nav class="pcoded-navbar menu-light">
     <div class="navbar-wrapper">
         <div class="navbar-content scroll-div">
-            <div class="main-menu-header">
-                <img class="img-radius" src="~/images/user/avatar-2.jpg" alt="User-Profile-Image">
-                <div class="user-details">
-                    <div id="more-details">UX Designer <i class="fa fa-caret-down"></i></div>
+            
+            <!-- User Info -->
+            <div class="">
+                <div class="main-menu-header">
+                    <img class="img-radius" src="~/images/avatar-default.jpg" alt="User-Profile-Image">
+                    <div class="user-details">
+                        <div id="more-details">Employé <i class="fa fa-caret-down"></i></div>
+                    </div>
+                </div>
+                <div class="collapse" id="nav-user-link">
+                    <ul class="list-unstyled">
+                        <li class="list-group-item">
+                            <a asp-controller="Compte" asp-action="MonProfil">
+                                <i class="feather icon-user m-r-5"></i>Mon profil
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a asp-controller="Compte" asp-action="Parametres">
+                                <i class="feather icon-settings m-r-5"></i>Paramètres
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="#!"><i class="feather icon-log-out m-r-5"></i>Déconnexion</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
-            <ul class="nav pcoded-inner-navbar ">
+            
+            <!-- Menu Items -->
+            <ul class="nav pcoded-inner-navbar">
                 <li class="nav-item pcoded-menu-caption">
                     <label>Navigation</label>
                 </li>
-                <li class="nav-item">
-                    <a href="/Dashboard" class="nav-link"><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+                
+                <!-- Dashboard -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-home"></i></span>
+                        <span class="pcoded-mtext">Tableau de bord</span>
+                    </a>
                 </li>
-                <!-- ajoute les autres liens selon besoin -->
+                
+                <li class="nav-item pcoded-menu-caption">
+                    <label>Demandes de Transport</label>
+                </li>
+                
+                <!-- Transports (Menu déroulant) -->
+                <li class="nav-item pcoded-hasmenu @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transport" ? "pcoded-trigger active" : "")">
+                    <a href="javascript:void(0)" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-truck"></i></span>
+                        <span class="pcoded-mtext">Mes Transports</span>
+                    </a>
+                    <ul class="pcoded-submenu">
+                        <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DemanderTransport" ? "active" : "")">
+                            <a asp-page="/Transport/DemandeTransport">
+                                <span class="pcoded-mtext">Demander un transport</span>
+                            </a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MesTransports" ? "active" : "")">
+                            <a asp-page="/Transport/MesTransports">
+                                <span class="pcoded-mtext">Liste de mes transports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item pcoded-menu-caption">
+                    <label>Mon Circuit Régulier</label>
+                </li>
+                
+                <!-- Mon Circuit -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Circuit" ? "active" : "")">
+                    <a asp-controller="Circuit" asp-action="MonCircuit" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-map"></i></span>
+                        <span class="pcoded-mtext">Mon circuit</span>
+                    </a>
+                </li>
+                
+                <!-- Horaires -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Horaire" ? "active" : "")">
+                    <a asp-controller="Horaire" asp-action="MesHoraires" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-clock"></i></span>
+                        <span class="pcoded-mtext">Mes horaires</span>
+                    </a>
+                </li>
+                
+                <!-- Suivi en temps réel -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Suivi" ? "active" : "")">
+                    <a asp-controller="Suivi" asp-action="Index" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-navigation"></i></span>
+                        <span class="pcoded-mtext">Suivre mon bus</span>
+                    </a>
+                </li>
+                
+                <!-- Carte Interactive -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Carte" ? "active" : "")">
+                    <a asp-controller="Carte" asp-action="Index" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-map-pin"></i></span>
+                        <span class="pcoded-mtext">Voir la carte</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item pcoded-menu-caption">
+                    <label>Mon Compte</label>
+                </li>
+                
+                <!-- Mon Adresse -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Compte" && ViewContext.RouteData.Values["action"]?.ToString() == "MonAdresse" ? "active" : "")">
+                    <a asp-controller="Compte" asp-action="MonAdresse" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-map-pin"></i></span>
+                        <span class="pcoded-mtext">Mon adresse</span>
+                    </a>
+                </li>
+                
+                <!-- Mon Profil -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Compte" && ViewContext.RouteData.Values["action"]?.ToString() == "MonProfil" ? "active" : "")">
+                    <a asp-controller="Compte" asp-action="MonProfil" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-user"></i></span>
+                        <span class="pcoded-mtext">Mon profil</span>
+                    </a>
+                </li>
+                
+                <!-- Notifications -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notification" ? "active" : "")">
+                    <a asp-controller="Notification" asp-action="Index" class="nav-link">
+                        <span class="pcoded-micon"><i class="feather icon-bell"></i></span>
+                        <span class="pcoded-mtext">Notifications</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

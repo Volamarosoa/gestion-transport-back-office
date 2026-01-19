@@ -1,51 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
-    <title>@ViewData["Title"] - Able Pro</title>
+docker volume create sqlserver_data
 
-    <link rel="icon" href="~/assets/images/favicon.ico" type="image/x-icon">
+docker run -d ^
+  --name sqlserver ^
+  -e "ACCEPT_EULA=Y" ^
+  -e "SA_PASSWORD=SqlServer@123" ^
+  -p 1433:1433 ^
+  -v sqlserver_data:/var/opt/mssql ^
+  mcr.microsoft.com/mssql/server:2022-latest
 
-    <link rel="stylesheet" href="~/assets/css/plugins/animate.min.css">
-    
-    <link rel="stylesheet" href="~/assets/css/style.css"> -->
+docker exec -it sqlserver bash
+    /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost \
+    -U sa \
+    -P "SqlServer@123" \
+    -C
 
-      
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="description" content="" />
-    <meta name="keywords" content="">
-    <meta name="author" content="Phoenixcoded" />
-    <!-- Favicon icon -->
-    <link rel="icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    test rapide:
+        SELECT @@VERSION;
+        GO
 
-    <!-- vendor css -->
-    <link rel="stylesheet" href="/assets/css/style.css">
 
-    @await RenderSectionAsync("Styles", required: false)
-</head>
-<body>
-    <div class="loader-bg">
-        <div class="loader-track">
-            <div class="loader-fill"></div>
-        </div>
-    </div>
-    <nav class="pcoded-navbar">
-        <div class="navbar-wrapper">
-             </div>
-    </nav>
-   @RenderBody()
+docker start sqlserver
 
-    <script src="~/assets/js/vendor-all.min.js"></script>
+docker restart sqlserver
 
-    <script src="~/assets/js/plugins/bootstrap.min.js"></script>
+docker stop sqlserver
 
-    <script src="~/assets/js/ripple.js"></script>
-
-    <script src="~/assets/js/pcoded.min.js"></script>
-
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+docker exec -it sqlserver bash
+    /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "SqlServer@123" -C

@@ -1,42 +1,70 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="description" content="" />
-    <meta name="keywords" content="">
-    <meta name="author" content="Phoenixcoded" />
-    <title>@ViewData["Title"]</title>
-    <link rel="icon" href="~/images/favicon.ico" type="image/x-icon">
+    <title>@ViewData["Title"] - Gestion Transport</title>
 
-    <!-- vendor css -->
+    <!-- Favicon -->
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon">
+    
+    <!-- Able Pro CSS -->
     <link rel="stylesheet" href="~/css/style.css">
-    <link rel="stylesheet" href="~/css/layout-rtl.css">
+    
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="">
-    <!-- Sidebar -->
-    @await Html.PartialAsync("_Sidebar")
+<body>
+    <!-- Pre-loader -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
 
-    <!-- Header / Navbar -->
-    @await Html.PartialAsync("_Navbar")
+    <!-- Sidebar Navigation -->
+    <partial name="_Sidebar" />
+
+    <!-- Header -->
+    <partial name="_Header" />
 
     <!-- Main Content -->
     <div class="pcoded-main-container">
         <div class="pcoded-content">
-            @RenderBody()
+            <!-- Breadcrumb -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">@ViewData["Title"]</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a asp-controller="Home" asp-action="Index">
+                                        <i class="feather icon-home"></i>
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item"><a href="#!">@ViewData["Title"]</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="row">
+                @RenderBody()
+            </div>
         </div>
     </div>
 
-    <!-- Required Js -->
+    <!-- Scripts -->
     <script src="~/js/vendor-all.min.js"></script>
     <script src="~/js/plugins/bootstrap.min.js"></script>
     <script src="~/js/ripple.js"></script>
     <script src="~/js/pcoded.min.js"></script>
-
-    <!-- Apex Chart -->
-    <script src="~/js/plugins/apexcharts.min.js"></script>
-    <!-- Custom Dashboard Charts -->
-    <script src="~/js/pages/dashboard-main.js"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
