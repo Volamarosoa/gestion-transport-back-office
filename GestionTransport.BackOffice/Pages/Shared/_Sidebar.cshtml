@@ -37,34 +37,42 @@
                 
                 <!-- Dashboard -->
                 <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
-                    <a asp-controller="Home" asp-action="Index" class="nav-link">
+                    <a class="nav-link" asp-page="/Index">
                         <span class="pcoded-micon"><i class="feather icon-home"></i></span>
                         <span class="pcoded-mtext">Tableau de bord</span>
                     </a>
                 </li>
-                
+
                 <li class="nav-item pcoded-menu-caption">
-                    <label>Demandes de Transport</label>
+                    <label>Véhicule</label>
+                </li>
+
+                <!-- Gestion vehicule -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "GestionVehicule" ? "active" : "")">
+                    <a class="nav-link" asp-page="/Vehicules/GestionVehicule">
+                        <span class="pcoded-micon"><i class="feather icon-settings"></i></span>
+                        <span class="pcoded-mtext">Gestion véhicule</span>
+                    </a>
                 </li>
                 
-                <!-- Transports (Menu déroulant) -->
-                <li class="nav-item pcoded-hasmenu @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transport" ? "pcoded-trigger active" : "")">
-                    <a href="javascript:void(0)" class="nav-link">
-                        <span class="pcoded-micon"><i class="feather icon-truck"></i></span>
-                        <span class="pcoded-mtext">Mes Transports</span>
+                <li class="nav-item pcoded-menu-caption">
+                    <label>Mes Transports</label>
+                </li>
+
+                <!-- Demande Transport -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "DemanderTransport" ? "active" : "")">
+                    <a class="nav-link" asp-page="/Transport/DemandeTransport">
+                        <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
+                        <span class="pcoded-mtext">Demander un transport</span>
                     </a>
-                    <ul class="pcoded-submenu">
-                        <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DemanderTransport" ? "active" : "")">
-                            <a asp-page="/Transport/DemandeTransport">
-                                <span class="pcoded-mtext">Demander un transport</span>
-                            </a>
-                        </li>
-                        <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MesTransports" ? "active" : "")">
-                            <a asp-page="/Transport/MesTransports">
-                                <span class="pcoded-mtext">Liste de mes transports</span>
-                            </a>
-                        </li>
-                    </ul>
+                </li>
+
+                <!-- Liste de l'historique des Transports -->
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "MesTransports" ? "active" : "")">
+                    <a class="nav-link" asp-page="/Transport/MesTransports">
+                        <span class="pcoded-micon"><i class="feather icon-list"></i></span>
+                        <span class="pcoded-mtext">Liste de mes transports</span>
+                    </a>
                 </li>
                 
                 <li class="nav-item pcoded-menu-caption">
