@@ -14,7 +14,9 @@
 
 @if (TempData["Error"] != null) {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>@TempData["Error"].</strong>
+        <strong>
+            @Html.Raw(TempData["Error"]?.ToString()?.Replace("\n", "<br/>"))
+        </strong>
         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
 }
@@ -25,6 +27,14 @@
         <div class="card-header">
             <h5>Liste des Vehicules</h5>
             <div class="card-header-right">
+                <!-- Bouton Import dans le card-header -->
+                <div class="btn-group card-option">
+                    <button type="button" class="btn btn-success"
+                            style="margin-right: 15px;"
+                            data-toggle="modal" data-target="#modalImport">
+                        <i class="feather icon-upload mr-1"></i> Importer Excel
+                    </button>
+                </div>
                 <div class="btn-group card-option">
                     <button 
                         type="button" 
@@ -218,6 +228,54 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODALE IMPORT ===== -->
+<div id="modalImport" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="feather icon-upload mr-2"></i> Importer depuis Excel
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" asp-page-handler="Import" enctype="multipart/form-data">
+                <input type="hidden" name="pageActuelle" value="@Model.PageActuelle" />
+                <div class="modal-body">
+                    <p class="text-muted">Le fichier Excel doit avoir ce format :</p>
+                    <table class="table table-bordered table-sm text-center mb-3">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Colonne A</th>
+                                <th>Colonne B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="text-muted">
+                                <td>N° Immatriculation</td>
+                                <td>NombrePlaces</td>
+                            </tr>
+                            <tr><td>ABC-1234</td><td>5</td></tr>
+                            <tr><td>XYZ-5678</td><td>8</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fichier Excel (.xlsx)</label>
+                        <input type="file" name="FichierExcel" class="form-control" accept=".xlsx" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="feather icon-upload mr-1"></i> Importer
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
