@@ -1,0 +1,253 @@
+@page
+@model GestionTransport.BackOffice.Pages.Vehicules.GestionVehiculeModel
+@{
+    ViewData["Title"] = "Véhicules";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>@TempData["Success"].</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+@if (TempData["Error"] != null) {
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>@TempData["Error"].</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+<!-- Recent Vehicules Table -->
+<div class="col-xl-12">
+    <div class="card table-card">
+        <div class="card-header">
+            <h5>Liste des Vehicules</h5>
+            <div class="card-header-right">
+                <div class="btn-group card-option">
+                    <button 
+                        type="button" 
+                        class="btn btn-primary" 
+                        style="margin-right: 15px;" data-toggle="modal" data-target="#addVehiculeModal"
+                        onclick="openCreate()"
+                    >
+                        <i class="feather icon-plus-circle"></i>
+                        Ajouter un véhicule
+                    </button>
+                </div>
+                <div class="btn-group card-option">
+                    <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="feather icon-more-horizontal"></i>
+                    </button>
+                    <ul class="list-unstyled card-option dropdown-menu dropdown-menu-right">
+                        <li class="dropdown-item full-card"><a href="#!"><span><i class="feather icon-maximize"></i> maximiser</span></a></li>
+                        <li class="dropdown-item minimize-card"><a href="#!"><span><i class="feather icon-minus"></i> réduire</span></a></li>
+                        <li class="dropdown-item reload-card"><a href="#!"><i class="feather icon-refresh-cw"></i> recharger</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <!-- <th>#</th> -->
+                            <th>N° Immatriculation</th>
+                            <th>Places</th>
+                            <th>Statut</th>
+                            <th>Date insertion</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @if (!Model._ListeVehicule.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="feather icon-truck" style="font-size:2rem;"></i>
+                                <p class="mt-2 mb-0">Aucun véhicule trouvé.</p>
+                                <small>Cliquez sur <strong>+ Ajouter un véhicule</strong> pour commencer.</small>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var v in Model._ListeVehicule) // ← sans le @ !
+                        {
+                            <tr>
+                                <td>@v.Matricule</td>
+                                <td>@v.NombrePlaces</td>
+                                <td>
+                                    <span class="badge @(v.Actif ? "bg-success" : "bg-danger")">
+                                        @(v.Actif ? "Actif" : "Inactif")
+                                    </span>
+                                </td>
+                                <td>@v.DateInsertion.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning"
+                                            data-toggle="modal" data-target="#addVehiculeModal"
+                                            onclick="openEdit(@v.Id, '@v.Matricule', @v.NombrePlaces, @v.Actif.ToString().ToLower())">
+                                        <i class="feather icon-edit mr-2"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger"
+                                            data-toggle="modal" data-target="#modalDelete"
+                                            onclick="openDelete(@v.Id, '@v.Matricule')">
+                                        <i class="feather icon-trash-2 mr-2"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+                </table>
+            </div>
+            
+            <!-- PAGINATION -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="p-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-end mb-0">
+
+                            <!-- Bouton Précédent -->
+                                <li class="page-item @(Model.PageActuelle == 1 ? "disabled" : "")">
+                                    <a class="page-link" href="/Vehicules/GestionVehicule?page=@(Model.PageActuelle - 1)">
+                                        <span>&laquo;</span>
+                                    </a>
+                                </li>
+
+                                <!-- Numéros de pages -->
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.PageActuelle ? "active" : "")">
+                                        <a class="page-link" href="/Vehicules/GestionVehicule?page=@i">@i</a>
+                                    </li>
+                                }
+
+                                <!-- Bouton Suivant -->
+                                <li class="page-item @(Model.PageActuelle == Model.TotalPages ? "disabled" : "")">
+                                    <a class="page-link" href="/vehicules/GestionVehicule?page=@(Model.PageActuelle + 1)">
+                                        <span>&raquo;</span>
+                                    </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+
+                    <small class="text-muted">
+                        Page @Model.PageActuelle sur @Model.TotalPages
+                        (@(Model.TotalPages * Model.PageSize) véhicules au total)
+                    </small>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODALE CREATE / EDIT ===== -->
+<div class="col-xl-4 col-md-6">
+    <div id="addVehiculeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addVehiculeModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitre">Modal Title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <form method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="vehiculeId" name="Vehicule.Id" value="0" />
+                        <input type="hidden" name="pageActuelle" value="@Model.PageActuelle" />
+                        <div class="mb-3">
+                            <label class="form-label">N° Immatriculation</label>
+                            <input type="text" id="matricule" name="Vehicule.Matricule"
+                                class="form-control" placeholder="Ex: IMM-1234" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de places</label>
+                            <input type="number" id="nombrePlaces" name="Vehicule.NombrePlaces"
+                                class="form-control" min="1" required />
+                        </div>
+                        <div class="form-check" id="actifContainer" style="display:none;">
+                            <input type="checkbox" id="actif" name="Vehicule.Actif"
+                                class="form-check-input" value="true" checked />
+                            <label class="form-check-label">Actif</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn  btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button id="btnSubmit" type="submit" class="btn  btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODALE DELETE ===== -->
+<div class="col-xl-4 col-md-6">
+    <div id="modalDelete" class="modal fade" tabindex="-1" role="dialog" ria-labelledby="modalDeleteTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+            <!-- bg-danger -->
+                <div class="modal-header bg-danger text-white"> 
+                    <h5 class="modal-title" id="modalTitre">
+                        <!-- <i class="feather icon-trash-2 mr-2"></i> -->
+                        <!-- <i class="feather icon-alert-triangle text-danger" style="font-size: 2rem;"></i> -->
+                            Confirmer la suppression
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <form method="post" asp-page-handler="Delete">
+                    <div class="modal-body text-center py-4">
+                        <h5 class="mt-3"><i class="feather icon-alert-triangle text-danger" style="font-size: 2rem; margin-right: 4px;"></i>Êtes-vous sûr ? Vous êtes sur le point de désactiver le véhicule immatriculé:</h5>
+                        <h4 class="text-danger font-weight-bold" id="deleteMatricule"></h4>
+                        <small class="text-muted">**Cette action peut être annulée en réajoutant l'immatriculation du véhicule.</small>
+                        <input type="hidden" id="deleteId" name="id" />
+                        <input type="hidden" name="pageActuelle" value="@Model.PageActuelle" />
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">
+                            <i class="feather icon-x mr-1"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="feather icon-trash-2 mr-1"></i> Oui, désactiver
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openCreate() {
+        document.getElementById("modalTitre").innerText = "Ajouter un véhicule";
+        document.getElementById("vehiculeId").value = "0";
+        document.getElementById("matricule").value = "";
+        document.getElementById("nombrePlaces").value = "";
+        document.getElementById("actif").checked = true;
+        document.getElementById("btnSubmit").innerText = "Enregistrer";
+    }
+
+    function openEdit(id, matricule, places, actif) {
+        document.getElementById("modalTitre").innerText = "Modifier le véhicule";
+        document.getElementById("vehiculeId").value = id;
+        document.getElementById("matricule").value = matricule;
+        document.getElementById("nombrePlaces").value = places;
+        document.getElementById("actif").checked = actif;
+        document.getElementById("btnSubmit").innerText = "Mettre à jour";
+        // document.getElementById("actifContainer").style.display = "block";
+        console.log("Page actuelle envoyée : ", @Model.PageActuelle)
+    }
+
+    function openDelete(id, matricule) {
+        console.log(id + " " + matricule)
+        document.getElementById("deleteId").value = id;
+        document.getElementById("deleteMatricule").innerText = matricule;
+    }
+</script>
+}
