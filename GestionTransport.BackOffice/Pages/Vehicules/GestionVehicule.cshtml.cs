@@ -158,9 +158,10 @@ public class GestionVehiculeModel : PageModel
             return Redirect($"/Vehicules/GestionVehicule?page={PageActuelle}");
         }
 
-        if (!FichierExcel.FileName.EndsWith(".xlsx"))
+        string extension = Path.GetExtension(FichierExcel.FileName).ToLower();
+        if (extension != ".xlsx" && extension != ".csv")
         {
-            TempData["Error"] = "Le fichier doit être au format .xlsx !";
+            TempData["Error"] = "Le fichier doit être au format .xlsx ou .csv !";
             return Redirect($"/Vehicules/GestionVehicule?page={PageActuelle}");
         }
 
@@ -170,19 +171,15 @@ public class GestionVehiculeModel : PageModel
         int ignores = 0;
         List<string> erreurs = new();
 
-        using var stream = new MemoryStream();
-        await FichierExcel.CopyToAsync(stream);
+        // ← Parse selon le type de fichier
+        List<(string Matricule, string Places)> lignes = extension == ".csv"
+        ? await ParseCsvAsync(FichierExcel)
+        : await ParseExcelAsync(FichierExcel);
 
-        ExcelPackage.License.SetNonCommercialPersonal("GestionTransport"); // ← fix ici
-        using var package = new ExcelPackage(stream);
-
-        var feuille = package.Workbook.Worksheets[0]; // première feuille
-        int lignes = feuille.Dimension?.Rows ?? 0;
-
-        for (int i = 2; i <= lignes; i++) // i=2 pour sauter l'en-tête
+        for (int i = 2; i < lignes.Count; i++) // i=2 pour sauter l'en-tête
         {
-            string? matricule = feuille.Cells[i, 1].Value?.ToString()?.Trim().ToUpper();
-            string? placesStr = feuille.Cells[i, 2].Value?.ToString()?.Trim();
+            string? matricule = lignes[i].Matricule?.Trim().ToUpper();
+            string? placesStr = lignes[i].Places?.Trim();
 
             if (string.IsNullOrEmpty(matricule))
             {
@@ -238,15 +235,58 @@ public class GestionVehiculeModel : PageModel
             }
         }
 
-        await _db.SaveChangesAsync();
 
         if (erreurs.Any())
             TempData["Error"] = string.Join("\n", erreurs);
-        else
+        else {
+            await _db.SaveChangesAsync();
             TempData["Success"] = $"Import terminé : {ajoutes} ajouté(s), {modifies} modifié(s), {reactives} réactivé(s), {ignores} ignoré(s).";
+        }
 
         int total = await _db.ListeVehicule.CountAsync();
         int lastPage = (int)Math.Ceiling(total / (double)PageSize);
         return Redirect($"/Vehicules/GestionVehicule?page={lastPage}");
+    }
+
+    // ===== PARSE EXCEL =====
+    private async Task<List<(string Matricule, string Places)>> ParseExcelAsync(IFormFile fichier)
+    {
+        var result = new List<(string Matricule, string Places)>();
+        using var stream = new MemoryStream();
+        await fichier.CopyToAsync(stream);
+        ExcelPackage.License.SetNonCommercialPersonal("GestionTransport");
+        using var package = new ExcelPackage(stream);
+        var feuille = package.Workbook.Worksheets[0];
+        int nbLignes = feuille.Dimension?.Rows ?? 0;
+        for (int i = 2; i <= nbLignes; i++)
+        {
+            string matricule = feuille.Cells[i, 1].Value?.ToString() ?? "";
+            string places = feuille.Cells[i, 2].Value?.ToString() ?? "";
+            Console.WriteLine(i + " : " + matricule);
+            result.Add((matricule, places));
+        }
+        return result;
+    }
+
+    // ===== PARSE CSV =====
+    private async Task<List<(string Matricule, string Places)>> ParseCsvAsync(IFormFile fichier)
+    {
+        var result = new List<(string Matricule, string Places)>();
+        using var stream = new StreamReader(fichier.OpenReadStream());
+        bool premiereLigne = true;
+        while (!stream.EndOfStream)
+        {
+            string? ligne = await stream.ReadLineAsync();
+            if (premiereLigne) { premiereLigne = false; continue; }
+            if (string.IsNullOrWhiteSpace(ligne)) continue;
+
+            char separateur = ligne.Contains(';') ? ';' : ',';
+            string[] colonnes = ligne.Split(separateur);
+
+            string matricule = colonnes.Length > 0 ? colonnes[0].Trim() : "";
+            string places = colonnes.Length > 1 ? colonnes[1].Trim() : "";
+            result.Add((matricule, places));
+        }
+        return result;
     }
 }
