@@ -63,7 +63,14 @@
                 <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "DemanderTransport" ? "active" : "")">
                     <a class="nav-link" asp-page="/Transport/DemandeTransport">
                         <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
-                        <span class="pcoded-mtext">Demander un transport</span>
+                        <span class="pcoded-mtext">Demande de transport en attente</span>
+                    </a>
+                </li>
+
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "HistoriqueTransport" ? "active" : "")">
+                    <a class="nav-link" asp-page="/Transport/HistoriqueTransport">
+                        <span class="pcoded-micon"><i class="feather icon-list"></i></span>
+                        <span class="pcoded-mtext">Historique des transports</span>
                     </a>
                 </li>
 

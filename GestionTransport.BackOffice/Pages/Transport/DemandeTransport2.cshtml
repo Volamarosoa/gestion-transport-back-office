@@ -1,0 +1,62 @@
+@page
+@model DemandeTransportModel
+@{
+    ViewData["Title"] = "Demander un Transport";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <h5>Demander un Transport</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="DemanderTransport" method="post">
+                <div class="form-group">
+                    <label>Date du transport</label>
+                    <input type="date" class="form-control" name="Date" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Type de transport</label>
+                    <select class="form-control" name="Type" required>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="Aller">Aller (Domicile → Entreprise)</option>
+                        <option value="Retour">Retour (Entreprise → Domicile)</option>
+                        <option value="AllerRetour">Aller-Retour</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Adresse de départ (si différente de votre domicile)</label>
+                    <input type="text" class="form-control" name="AdresseDepart" placeholder="Optionnel" />
+                </div>
+
+                <div class="form-group">
+                    <label>Adresse d'arrivée (si différente de l'entreprise)</label>
+                    <input type="text" class="form-control" name="AdresseArrivee" placeholder="Optionnel" />
+                </div>
+
+                <div class="form-group">
+                    <label>Heure souhaitée</label>
+                    <input type="time" class="form-control" name="HeureSouhaitee" />
+                </div>
+
+                <div class="form-group">
+                    <label>Raison / Commentaire</label>
+                    <textarea class="form-control" name="Commentaire" rows="3" placeholder="Ex: Rendez-vous médical, mission..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="Urgent" /> Demande urgente
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="feather icon-send"></i> Soumettre la demande
+                </button>
+                <a asp-action="MesTransports" class="btn btn-secondary">Annuler</a>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,7 +1,7 @@
 @page
-@model GestionTransport.BackOffice.Pages.Transport.DemandeTransportModel
+@model GestionTransport.BackOffice.Pages.Transport.HistoriqueTransportModel
 @{
-    ViewData["Title"] = "Demandes de Transport";
+    ViewData["Title"] = "Historique des Transports";
 }
 
 @* ===== ALERTES ===== *@
@@ -29,12 +29,24 @@
         <div class="card-header">
             <h5>
                 <i class="feather icon-clock mr-2"></i>
-                Demandes de Transport en 
-                <span class="badge bg-warning ml-2">attente</span>
+                Historique des Transports 
+                <span class="badge bg-success ml-2">validées</span>
             </h5>
+
+            @* Dans le card-header, à côté des filtres *@
+            <form method="post" asp-page-handler="AffectationAuto" style="display:inline;">
+                <input type="hidden" name="pageActuelle" value="@Model.PageActuelle" />
+                <input type="hidden" name="dateTransportFiltre" value="@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="typeTransportFiltre" value="@Model.TypeTransportFiltre" />
+                <button type="submit" class="btn btn-sm btn-warning"
+                        onclick="return confirm('Lancer l\'affectation automatique des véhicules ?')">
+                    <i class="feather icon-zap mr-1"></i> Affectation automatique
+                </button>
+            </form>
 
             <div class="card-header-right">
                 @* ===== FILTRES ===== *@
+                
                 <form method="get" class="d-flex align-items-center" style="gap: 8px; margin-right: 10px;">
                     <input type="text"
                            name="recherche"
@@ -49,28 +61,36 @@
                            class="form-control form-control-sm"
                            style="width: 160px;" />
 
+                    <select name="typeTransportFiltre" class="form-control form-control-sm" style="width: 120px;">
+                        <option value="">Tous</option>
+                        <option value="1"   selected="@(Model.TypeTransportFiltre == 1)">Aller</option>
+                        <option value="2"  selected="@(Model.TypeTransportFiltre == 2)">Retour</option>
+                    </select>
+
                     <button type="submit" class="btn btn-sm btn-primary">
                         <i class="feather icon-search"></i>
                     </button>
 
                     @if (!string.IsNullOrEmpty(Model.Recherche) || Model.DateTransportFiltre.HasValue)
                     {
-                        <a href="/Transport/DemandeTransport" class="btn btn-sm btn-secondary">
+                        <a href="/Transport/HistoriqueTransport" class="btn btn-sm btn-secondary">
                             <i class="feather icon-x"></i>
                         </a>
                     }
+
+                    <div class="btn-group card-option">
+                        <button type="button" class="btn dropdown-toggle" data-toggle="dropdown">
+                            <i class="feather icon-more-horizontal"></i>
+                        </button>
+                        <ul class="list-unstyled card-option dropdown-menu dropdown-menu-right">
+                            <li class="dropdown-item full-card"><a href="#!"><span><i class="feather icon-maximize"></i> Maximiser</span></a></li>
+                            <li class="dropdown-item minimize-card"><a href="#!"><span><i class="feather icon-minus"></i> Réduire</span></a></li>
+                            <li class="dropdown-item reload-card"><a href="#!"><i class="feather icon-refresh-cw"></i> Recharger</a></li>
+                        </ul>
+                    </div>
                 </form>
 
-                <div class="btn-group card-option">
-                    <button type="button" class="btn dropdown-toggle" data-toggle="dropdown">
-                        <i class="feather icon-more-horizontal"></i>
-                    </button>
-                    <ul class="list-unstyled card-option dropdown-menu dropdown-menu-right">
-                        <li class="dropdown-item full-card"><a href="#!"><span><i class="feather icon-maximize"></i> Maximiser</span></a></li>
-                        <li class="dropdown-item minimize-card"><a href="#!"><span><i class="feather icon-minus"></i> Réduire</span></a></li>
-                        <li class="dropdown-item reload-card"><a href="#!"><i class="feather icon-refresh-cw"></i> Recharger</a></li>
-                    </ul>
-                </div>
+                
             </div>
         </div>
 
@@ -87,7 +107,7 @@
                             <th>Heure</th>
                             <th>Date Transport</th>
                             <th>Date Demande</th>
-                            <th>Statut</th>
+                            <th>Vehicule</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -97,8 +117,7 @@
                             <tr>
                                 <td colspan="10" class="text-center py-5 text-muted">
                                     <i class="feather icon-check-circle" style="font-size: 2.5rem; color: #28a745;"></i>
-                                    <p class="mt-2 mb-0 font-weight-bold">Aucune demande en attente.</p>
-                                    <small>Toutes les demandes du jour ont été traitées.</small>
+                                    <p class="mt-2 mb-0 font-weight-bold">Aucune historique de transport.</p>
                                 </td>
                             </tr>
                         }
@@ -163,38 +182,12 @@
                                     </td>
 
                                     <td>
-                                        @{
-                                            var statut = d.GetStatut();
-                                            var badgeClass = statut switch
-                                            {
-                                                "Validée"   => "bg-success",
-                                                "Rejetée"   => "bg-danger",
-                                                "Archivée"  => "bg-secondary",
-                                                _           => "bg-warning"
-                                            };
-                                        }
-                                        <span class="badge @badgeClass">@statut</span>
+                                        <span class="badge bg-success">
+                                            @d.Vehicule?.Matricule
+                                        </span>
                                     </td>
 
                                     <td>
-                                        @* Valider *@
-                                        <button class="btn btn-sm btn-success"
-                                                title="Valider"
-                                                data-toggle="modal"
-                                                data-target="#modalValider"
-                                                onclick="openValider(@d.Id, '@d.Employe?.NomComplet()', '@d.GetDescription()')">
-                                            <i class="feather icon-check"></i>
-                                        </button>
-
-                                        @* Rejeter *@
-                                        <button class="btn btn-sm btn-danger"
-                                                title="Rejeter"
-                                                data-toggle="modal"
-                                                data-target="#modalRejeter"
-                                                onclick="openRejeter(@d.Id, '@d.Employe?.NomComplet()', '@d.GetDescription()')">
-                                            <i class="feather icon-x"></i>
-                                        </button>
-
                                         @* Détail *@
                                         <button class="btn btn-sm btn-info"
                                                 title="Détail"
@@ -209,7 +202,8 @@
                                                     '@d.TypeTransport?.Libelle',
                                                     '@d.HeureTransport?.FormatHeure()',
                                                     '@d.DateTransport?.ToString("dd/MM/yyyy")',
-                                                    '@d.DateCreation.ToString("dd/MM/yyyy HH:mm")'
+                                                    '@d.DateCreation.ToString("dd/MM/yyyy HH:mm")',
+                                                    '@d.Vehicule?.Matricule'
                                                 )">
                                             <i class="feather icon-eye"></i>
                                         </button>
@@ -229,12 +223,12 @@
                         <ul class="pagination justify-content-end mb-0">
 
                             <li class="page-item @(Model.PageActuelle == 1 ? "disabled" : "")">
-                                <a class="page-link" href="/Transport/DemandeTransport?page=1&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")">
+                                <a class="page-link" href="/Transport/HistoriqueTransport?page=1&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")&typeTransportFiltre=@Model.TypeTransportFiltre">
                                     <i class="feather icon-chevrons-left"></i>
                                 </a>
                             </li>
                             <li class="page-item @(Model.PageActuelle == 1 ? "disabled" : "")">
-                                <a class="page-link" href="/Transport/DemandeTransport?page=@(Model.PageActuelle - 1)&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")">
+                                <a class="page-link" href="/Transport/HistoriqueTransport?page=@(Model.PageActuelle - 1)&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")&typeTransportFiltre=@Model.TypeTransportFiltre">
                                     <i class="feather icon-chevron-left"></i>
                                 </a>
                             </li>
@@ -254,7 +248,7 @@
                             @for (int i = debut; i <= fin; i++)
                             {
                                 <li class="page-item @(i == Model.PageActuelle ? "active" : "")">
-                                    <a class="page-link" href="/Transport/DemandeTransport?page=@i&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")">@i</a>
+                                    <a class="page-link" href="/Transport/HistoriqueTransport?page=@i&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")&typeTransportFiltre=@Model.TypeTransportFiltre">@i</a>
                                 </li>
                             }
                             @if (fin < Model.TotalPages)
@@ -263,12 +257,12 @@
                             }
 
                             <li class="page-item @(Model.PageActuelle == Model.TotalPages ? "disabled" : "")">
-                                <a class="page-link" href="/Transport/DemandeTransport?page=@(Model.PageActuelle + 1)&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")">
+                                <a class="page-link" href="/Transport/HistoriqueTransport?page=@(Model.PageActuelle + 1)&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")&typeTransportFiltre=@Model.TypeTransportFiltre">
                                     <i class="feather icon-chevron-right"></i>
                                 </a>
                             </li>
                             <li class="page-item @(Model.PageActuelle == Model.TotalPages ? "disabled" : "")">
-                                <a class="page-link" href="/Transport/DemandeTransport?page=@Model.TotalPages&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")">
+                                <a class="page-link" href="/Transport/HistoriqueTransport?page=@Model.TotalPages&recherche=@Model.Recherche&dateTransportFiltre=@Model.DateTransportFiltre?.ToString("yyyy-MM-dd")&typeTransportFiltre=@Model.TypeTransportFiltre">
                                     <i class="feather icon-chevrons-right"></i>
                                 </a>
                             </li>
@@ -430,6 +424,12 @@
                             </td>
                             <td id="detailDateCreation"></td>
                         </tr>
+                        <tr>
+                            <td class="text-muted font-weight-bold">
+                                <i class="feather icon-check-square mr-1"></i> Vehicule
+                            </td>
+                            <td id="vehicule"></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -454,7 +454,7 @@
         document.getElementById("rejeterDescDemande").innerText = description;
     }
 
-    function openDetail(id, nom, matricule, adresse, site, typeTransport, heure, dateTransport, dateCreation) {
+    function openDetail(id, nom, matricule, adresse, site, typeTransport, heure, dateTransport, dateCreation, vehicule) {
         document.getElementById("detailId").innerText  = "#" + id;
         document.getElementById("detailNom").innerText           = nom;
         document.getElementById("detailMatricule").innerText     = matricule;
@@ -464,6 +464,7 @@
         document.getElementById("detailHeure").innerText         = heure;
         document.getElementById("detailDateTransport").innerText = dateTransport || "—";
         document.getElementById("detailDateCreation").innerText  = dateCreation;
+        document.getElementById("vehicule").innerText  = vehicule;
     }
 </script>
 }
